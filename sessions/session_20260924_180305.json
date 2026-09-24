@@ -1,0 +1,29 @@
+{
+  "id": "session_20260924_180305",
+  "title": "Campaña: Hola, quiero iniciar una campaña pa",
+  "created_at": 1790290985.3104405,
+  "updated_at": 1790290992.857346,
+  "current_step": 0,
+  "active_agent_id": "00_onboarding_specialist",
+  "messages": [
+    {
+      "role": "user",
+      "agent_id": "00_onboarding_specialist",
+      "content": "Hola, quiero iniciar una campaña para un nuevo producto SaaS de automatización.",
+      "timestamp": 1790290992.8573427
+    },
+    {
+      "role": "assistant",
+      "agent_id": "00_onboarding_specialist",
+      "content": "¡Hola! Excelente iniciativa. Los productos SaaS de automatización tienen un enorme potencial de escalabilidad, pero la clave del éxito en la campaña radica en posicionar con absoluta claridad el valor que aportan y a quién le resuelven la vida.\n\nPara diseñar una estrategia sólida y poder estructurar tu **Master Brief**, necesito profundizar en un par de puntos clave. Cuéntame:\n\n1. **¿Qué automatiza exactamente el SaaS y cuál es su modelo de precios?** *(Ejemplo: Automatiza atención por WhatsApp con IA, integración CRM-facturación, etc. / Pricing mensual o anual).*\n2. **¿Quién es tu cliente ideal (Avatar) y cuál es su dolor principal?** *(Ejemplo: Agencias de marketing saturadas, eCommerce que pierde ventas por respuesta lenta, pymes sin equipo técnico).*\n3. **¿Cuál es el objetivo principal y la propuesta de valor diferenciadora?** *(¿Buscas registros para un Free Trial, agendar demos comerciales o captar leads calificados? ¿Qué te hace mejor o diferente frente a Zapier, Make u otras soluciones del mercado?).*\n\nQuedo atento a tus respuestas para armar el diagnóstico estratégico y dar el siguiente paso.",
+      "timestamp": 1790290992.8573437
+    }
+  ],
+  "canvas": {
+    "brief": "¡Hola! Excelente iniciativa. Los productos SaaS de automatización tienen un enorme potencial de escalabilidad, pero la clave del éxito en la campaña radica en posicionar con absoluta claridad el valor que aportan y a quién le resuelven la vida.\n\nPara diseñar una estrategia sólida y poder estructurar tu **Master Brief**, necesito profundizar en un par de puntos clave. Cuéntame:\n\n1. **¿Qué automatiza exactamente el SaaS y cuál es su modelo de precios?** *(Ejemplo: Automatiza atención por WhatsApp con IA, integración CRM-facturación, etc. / Pricing mensual o anual).*\n2. **¿Quién es tu cliente ideal (Avatar) y cuál es su dolor principal?** *(Ejemplo: Agencias de marketing saturadas, eCommerce que pierde ventas por respuesta lenta, pymes sin equipo técnico).*\n3. **¿Cuál es el objetivo principal y la propuesta de valor diferenciadora?** *(¿Buscas registros para un Free Trial, agendar demos comerciales o captar leads calificados? ¿Qué te hace mejor o diferente frente a Zapier, Make u otras soluciones del mercado?).*\n\nQuedo atento a tus respuestas para armar el diagnóstico estratégico y dar el siguiente paso.",
+    "estrategia": "",
+    "ugc": "",
+    "prompts": "",
+    "organico": ""
+  }
+}

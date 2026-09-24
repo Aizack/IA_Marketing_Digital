@@ -1,0 +1,29 @@
+{
+  "id": "session_20260924_133213",
+  "title": "Campaña: Hola, quiero iniciar una campaña pa",
+  "created_at": 1790274733.9731019,
+  "updated_at": 1790274745.6214836,
+  "current_step": 0,
+  "active_agent_id": "00_onboarding_specialist",
+  "messages": [
+    {
+      "role": "user",
+      "agent_id": "00_onboarding_specialist",
+      "content": "Hola, quiero iniciar una campaña para un nuevo producto SaaS de automatización.",
+      "timestamp": 1790274745.621477
+    },
+    {
+      "role": "assistant",
+      "agent_id": "00_onboarding_specialist",
+      "content": "¡Hola! Qué excelente iniciativa. El sector de SaaS y automatización tiene un potencial enorme cuando se comunica la propuesta de valor con total claridad y foco en el retorno de inversión para el usuario. 🚀\n\nPara poder estructurar el **Master Brief** y diseñar una estrategia de impacto que maximice tus conversiones, necesito profundizar en unos pocos puntos clave de tu producto:\n\n---\n\n### 🔍 3 Preguntas Clave para el Diagnóstico:\n\n1. **La Oferta y Funcionalidad:**  \n   ¿Qué procesos o tareas automatiza exactamente la plataforma (ej. marketing, atención al cliente, operaciones internas) y cuál es su modelo de monetización / ticket promedio (ej. *free trial*, suscripción desde $X/mes, plan anual)?\n\n2. **El Cliente Ideal (Avatar):**  \n   ¿A quién va dirigido prioritariamente? (ej. agencias de marketing, e-commerce, fundadores de startups, equipos de ventas) y ¿cuál es su **frustración o dolor principal** antes de conocer tu herramienta?\n\n3. **Diferencial y Objetivo de la Campaña:**  \n   Frente a competidores conocidos (como Make, Zapier u otras soluciones del sector), ¿cuál es su gran ventaja competitiva? Y para esta campaña, ¿cuál es la meta principal: **registros para prueba gratuita (free trials), agendar llamadas/demos, o captación de leads cualificados**?\n\n---\n\nEn cuanto me compartas estos detalles, preparo el diagnóstico formal y el **Master Brief** listo para pasar a la fase de estrategia y creación de contenido. ¡Quedo atento!",
+      "timestamp": 1790274745.621478
+    }
+  ],
+  "canvas": {
+    "brief": "¡Hola! Qué excelente iniciativa. El sector de SaaS y automatización tiene un potencial enorme cuando se comunica la propuesta de valor con total claridad y foco en el retorno de inversión para el usuario. 🚀\n\nPara poder estructurar el **Master Brief** y diseñar una estrategia de impacto que maximice tus conversiones, necesito profundizar en unos pocos puntos clave de tu producto:\n\n---\n\n### 🔍 3 Preguntas Clave para el Diagnóstico:\n\n1. **La Oferta y Funcionalidad:**  \n   ¿Qué procesos o tareas automatiza exactamente la plataforma (ej. marketing, atención al cliente, operaciones internas) y cuál es su modelo de monetización / ticket promedio (ej. *free trial*, suscripción desde $X/mes, plan anual)?\n\n2. **El Cliente Ideal (Avatar):**  \n   ¿A quién va dirigido prioritariamente? (ej. agencias de marketing, e-commerce, fundadores de startups, equipos de ventas) y ¿cuál es su **frustración o dolor principal** antes de conocer tu herramienta?\n\n3. **Diferencial y Objetivo de la Campaña:**  \n   Frente a competidores conocidos (como Make, Zapier u otras soluciones del sector), ¿cuál es su gran ventaja competitiva? Y para esta campaña, ¿cuál es la meta principal: **registros para prueba gratuita (free trials), agendar llamadas/demos, o captación de leads cualificados**?\n\n---\n\nEn cuanto me compartas estos detalles, preparo el diagnóstico formal y el **Master Brief** listo para pasar a la fase de estrategia y creación de contenido. ¡Quedo atento!",
+    "estrategia": "",
+    "ugc": "",
+    "prompts": "",
+    "organico": ""
+  }
+}
