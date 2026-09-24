@@ -649,7 +649,7 @@
         const data = await res.json();
         if (data.status === 'healthy') {
           document.getElementById('status-badge').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Conectado`;
-          document.getElementById('account-email').innerText = data.authenticated_account || 'isacdiazb@gmail.com';
+          document.getElementById('account-email').innerText = data.authenticated_account || 'diazbisac@gmail.com';
         }
       } catch (e) {
         document.getElementById('status-badge').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span> Desconectado`;

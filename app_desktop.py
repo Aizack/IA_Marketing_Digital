@@ -1,42 +1,50 @@
 """
-Marketing AI Studio - Desktop Launcher (PyWebView)
-Ejecuta la interfaz de escritorio de la Agencia con los 4 Agentes y Subagentes Nivel 2.
+Marketing AI Studio V3 - Standalone Chromium Desktop Application Wrapper
+Lanza la aplicación como una ventana de escritorio nativa independiente (WebView2 / Chromium),
+desvinculada completamente de los navegadores locales y de problemas de caché.
 """
 
+import os
 import sys
 import time
-import socket
 import threading
 import uvicorn
 import webview
 
-def is_port_in_use(port: int) -> bool:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(('127.0.0.1', port)) == 0
+# Ensure C:\Users\PC\.gemini is in path for vault manager
+sys.path.append(r"C:\Users\PC\.gemini")
+try:
+    import manage_vault
+    manage_vault.switch_to_main()
+except Exception as e:
+    print(f"[DesktopApp] Note: Vault switch error: {e}")
 
-def start_backend(port: int):
-    uvicorn.run("server:app", host="127.0.0.1", port=port, log_level="warning")
+from server import app
 
-def main():
-    port = 8090
-    if not is_port_in_use(port):
-        server_thread = threading.Thread(target=start_backend, args=(port,), daemon=True)
-        server_thread.start()
-        time.sleep(1.2)
+def start_backend():
+    port = int(os.environ.get("PORT", 8090))
+    print(f"🚀 Iniciando servidor FastAPI en 127.0.0.1:{port}...")
+    uvicorn.run(app, host="127.0.0.1", port=port, log_level="warning")
 
-    url = f"http://127.0.0.1:{port}"
-    print(f"🚀 Iniciando Marketing AI Studio Desktop en {url}")
+if __name__ == "__main__":
+    # 1. Start FastAPI server in background thread
+    server_thread = threading.Thread(target=start_backend, daemon=True)
+    server_thread.start()
 
+    # 2. Wait 1 second for FastAPI initialization
+    time.sleep(1)
+
+    # 3. Create Desktop Chromium Window (Native Edge WebView2)
+    print("🖥️ Abriendo ventana nativa de escritorio (Chromium App)...")
     window = webview.create_window(
-        title="Marketing AI Studio · Agency OS v2.0",
-        url=url,
-        width=1280,
-        height=860,
-        min_size=(980, 650),
+        title="Marketing AI Studio V3 · Agency OS Conversacional",
+        url="http://127.0.0.1:8090",
+        width=1440,
+        height=900,
+        min_size=(1024, 720),
+        resizable=True,
         background_color="#080c15"
     )
 
-    webview.start(debug=False)
-
-if __name__ == "__main__":
-    main()
+    # Launch with private mode to prevent any browser caching
+    webview.start(private_mode=True)
