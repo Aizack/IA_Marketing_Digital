@@ -1,0 +1,27 @@
+services:
+  marketing-ai-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: marketing_ai_studio_engine
+    restart: unless-stopped
+    ports:
+      - "8090:8090"
+    environment:
+      - PORT=8090
+      - AGENT_ENV=production
+      - AGY_BIN_PATH=/root/.gemini/bin/agy
+    volumes:
+      # Mapeo en vivo de Manifiestos de Agentes (Nivel 1)
+      - ./.antigravity:/app/.antigravity:ro
+      # Mapeo en vivo de la Base de Conocimiento (Libros, Cursos, Transcripciones)
+      - ./knowledge_base:/app/knowledge_base:ro
+      # Carpeta persistente para todas las campañas generadas
+      - ./campaigns:/app/campaigns
+      # Mapeo de la sesión/credenciales de tu cuenta de Google
+      - ${USERPROFILE}/.gemini:/root/.gemini:ro
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3

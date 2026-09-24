@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv/
+
+# Antigravity temporary sessions / logs
+.antigravity/sessions/
+*.log
+
+# Windows & OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.lnk
+*.exe
+*.zip
+
+# Campaign exports (keep structure)
+campaigns/*
+!campaigns/.gitkeep
