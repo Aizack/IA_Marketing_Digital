@@ -11,14 +11,16 @@ Bienvenido al sistema **Marketing AI Studio (Agency OS)**. Este espacio de traba
 
 ---
 
-## 👥 Agentes Especialistas Disponibles (Skills Nativas)
+## ⌨️ Comandos Rápidos Directos (Slash Shortcuts)
 
-1. **`briefing-onboarding`**: Agente 00 - Diagnosticador y Onboarding Specialist. Entrevista amigablemente al cliente y genera el **Master Brief**.
-2. **`director-estratega`**: Agente 01 - Director Estratega de Marketing y Respuesta Directa. Aplica los 5 Niveles de Conciencia de Eugene Schwartz y los 12 Ángulos de Venta.
-3. **`guionista-ugc`**: Agente 02 - Guionista UGC & Video Creator. Diseña guiones clip a clip en tablas de producción para Meta Ads, TikTok y YouTube Shorts.
-4. **`prompts-visuales-6c`**: Agente 03 - Ingeniero de Prompts Visuales. Genera prompts fotorrealistas en inglés aplicando la fórmula 6C para Midjourney v6 / Flux.1 / DALL-E 3.
-5. **`contenido-pegajoso`**: Agente 04 - Creador de Contenido Orgánico. Redacta copys y publicaciones aplicando el framework *Made to Stick* (SUCCESs) y *Steal Like an Artist*.
-6. **`marketing-ai-studio`**: Orquestador maestro para ejecutar el pipeline completo paso a paso.
+Puedes invocar a cualquier agente o habilidad escribiendo directamente su comando:
+
+* **`/briefing`** (o `/onboarding`): Invoca al **Agente 00 (Diagnosticador)** para iniciar la entrevista y generar el Master Brief.
+* **`/estratega`**: Invoca al **Agente 01 (Director Estratega)** para definir el Mecanismo Único y los 12 Ángulos.
+* **`/guionugc`**: Invoca al **Agente 02 (Guionista UGC)** para escribir las tablas de producción clip a clip (0-30s).
+* **`/6c`**: Invoca al **Agente 03 (Ingeniero de Prompts)** para generar los prompts fotorrealistas en inglés con la fórmula 6C.
+* **`/cont-org`**: Invoca al **Agente 04 (Contenido Orgánico)** para crear carruseles y copys con el framework *Made to Stick* (SUCCESs).
+* **`/orquestador`**: Invoca al **Orquestador Maestro** para crear la campaña completa de 5 pasos.
 
 ---
 
