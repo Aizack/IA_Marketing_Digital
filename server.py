@@ -40,6 +40,20 @@ class FullCampaignRequest(BaseModel):
     product_desc: str
     target_audience: str
 
+class ChatMessageRequest(BaseModel):
+    agent_id: str
+    session_id: Optional[str] = None
+    message: str
+    handoff_context: Optional[str] = ""
+
+class NewSessionRequest(BaseModel):
+    title: Optional[str] = "Nueva Campaña"
+
+class HandoffRequest(BaseModel):
+    target_agent_id: str
+    step: Optional[int] = 0
+    handoff_context: Optional[str] = ""
+
 @app.get("/health")
 def health_check():
     email = engine.get_active_user_email()
@@ -121,6 +135,49 @@ def auth_status():
 @app.get("/api/agents")
 def get_agents():
     return {"agents": engine.get_available_agents()}
+
+# =========================================================================
+# RUTAS DE CHAT V3 Y GESTIÓN DE SESIONES PERSISTENTES
+# =========================================================================
+@app.get("/api/sessions")
+def list_sessions():
+    return {"sessions": engine.list_sessions()}
+
+@app.post("/api/sessions/new")
+def create_session(req: NewSessionRequest):
+    session = engine.get_or_create_session(title=req.title)
+    return {"status": "success", "session": session}
+
+@app.get("/api/sessions/{session_id}")
+def get_session(session_id: str):
+    session = engine.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Sesión no encontrada")
+    return {"session": session}
+
+@app.post("/api/chat/send")
+async def chat_send(req: ChatMessageRequest):
+    if not req.message:
+        raise HTTPException(status_code=400, detail="El mensaje no puede estar vacío")
+    
+    res = await engine.execute_agent_chat(
+        agent_id=req.agent_id,
+        session_id=req.session_id,
+        user_message=req.message,
+        handoff_context=req.handoff_context or ""
+    )
+    return res
+
+@app.post("/api/sessions/{session_id}/handoff")
+def session_handoff(session_id: str, req: HandoffRequest):
+    session = engine.load_session(session_id)
+    if not session:
+        raise HTTPException(status_code=404, detail="Sesión no encontrada")
+    
+    session["active_agent_id"] = req.target_agent_id
+    session["current_step"] = req.step if req.step is not None else session.get("current_step", 0) + 1
+    engine.save_session(session)
+    return {"status": "success", "session": session}
 
 @app.post("/api/generate")
 async def generate_content(req: GenerateRequest):

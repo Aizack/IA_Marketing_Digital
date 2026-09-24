@@ -23,6 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent
 AGENTS_DIR = BASE_DIR / ".antigravity" / "agentes"
 KB_DIR = BASE_DIR / "knowledge_base"
 CAMPAIGNS_DIR = BASE_DIR / "campanas"
+SESSIONS_DIR = BASE_DIR / "sessions"
 CREDS_FILE = BASE_DIR / "oauth_creds_marketing.json"
 PKCE_STATE_FILE = BASE_DIR / ".pkce_state.json"
 PORTABLE_AGY_BIN = Path("D:/Antigravity_Marketing/bin/agy.exe")
@@ -30,6 +31,7 @@ PORTABLE_DATA_DIR = Path("D:/Antigravity_Marketing/data")
 
 KB_DIR.mkdir(parents=True, exist_ok=True)
 CAMPAIGNS_DIR.mkdir(parents=True, exist_ok=True)
+SESSIONS_DIR.mkdir(parents=True, exist_ok=True)
 
 def _load_oauth_config() -> tuple:
     oauth_file = BASE_DIR / "oauth_config.json"
@@ -452,5 +454,131 @@ AUDIENCIA OBJETIVO: {target_audience}
                     "files": files
                 })
         return campaigns
+
+    def list_sessions(self) -> List[Dict[str, Any]]:
+        sessions = []
+        if not SESSIONS_DIR.exists():
+            return sessions
+        for file in sorted(SESSIONS_DIR.glob("*.json"), key=os.path.getmtime, reverse=True):
+            try:
+                with open(file, "r", encoding="utf-8") as f:
+                    s = json.load(f)
+                    sessions.append({
+                        "id": s.get("id"),
+                        "title": s.get("title", "Nueva Campaña"),
+                        "updated_at": s.get("updated_at"),
+                        "active_agent_id": s.get("active_agent_id", "00_onboarding_specialist"),
+                        "step": s.get("current_step", 0),
+                        "message_count": len(s.get("messages", []))
+                    })
+            except Exception:
+                pass
+        return sessions
+
+    def load_session(self, session_id: str) -> Optional[Dict[str, Any]]:
+        file_path = SESSIONS_DIR / f"{session_id}.json"
+        if file_path.exists():
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+        return None
+
+    def save_session(self, session_data: Dict[str, Any]):
+        session_id = session_data["id"]
+        session_data["updated_at"] = time.time()
+        file_path = SESSIONS_DIR / f"{session_id}.json"
+        with open(file_path, "w", encoding="utf-8") as f:
+            json.dump(session_data, f, indent=2, ensure_ascii=False)
+
+    def get_or_create_session(self, session_id: Optional[str] = None, title: str = "Nueva Campaña") -> Dict[str, Any]:
+        if session_id:
+            existing = self.load_session(session_id)
+            if existing:
+                return existing
+        
+        new_id = f"session_{time.strftime('%Y%m%d_%H%M%S')}"
+        new_session = {
+            "id": new_id,
+            "title": title,
+            "created_at": time.time(),
+            "updated_at": time.time(),
+            "current_step": 0,
+            "active_agent_id": "00_onboarding_specialist",
+            "messages": [],
+            "canvas": {
+                "brief": "",
+                "estrategia": "",
+                "ugc": "",
+                "prompts": "",
+                "organico": ""
+            }
+        }
+        self.save_session(new_session)
+        return new_session
+
+    async def execute_agent_chat(self, agent_id: str, session_id: str, user_message: str, handoff_context: str = "") -> Dict[str, Any]:
+        session = self.get_or_create_session(session_id)
+        session["active_agent_id"] = agent_id
+
+        # Auto-update title if it's the first user message
+        if len(session["messages"]) == 0 and user_message:
+            clean_title = user_message.strip()[:35]
+            session["title"] = f"Campaña: {clean_title}"
+
+        # 1. Format multi-turn context
+        history_text = ""
+        for m in session["messages"]:
+            role_name = "Usuario" if m["role"] == "user" else f"Agente ({m.get('agent_id', agent_id)})"
+            history_text += f"\n[{role_name}]: {m['content']}\n"
+
+        prompt_payload = f"""HISTORIAL DE LA CONVERSACIÓN:
+{history_text}
+
+---
+CONTEXTO ADICIONAL / RELEVO PREVIO:
+{handoff_context}
+
+---
+NUEVO MENSAJE DEL USUARIO:
+{user_message}
+"""
+        reply = await self.execute_agent(agent_id, prompt_payload, context_extra=handoff_context)
+
+        # 2. Append messages
+        session["messages"].append({
+            "role": "user",
+            "agent_id": agent_id,
+            "content": user_message,
+            "timestamp": time.time()
+        })
+        session["messages"].append({
+            "role": "assistant",
+            "agent_id": agent_id,
+            "content": reply,
+            "timestamp": time.time()
+        })
+
+        # 3. Update canvas sections if deliverable headers detected
+        if "Master Brief" in reply or "PROMPT DE RELEVO" in reply:
+            session["canvas"]["brief"] = reply
+        elif "Diagnóstico Estratégico" in reply or "Ángulos" in reply:
+            session["canvas"]["estrategia"] = reply
+        elif "Guiones UGC" in reply or "Clip a Clip" in reply:
+            session["canvas"]["ugc"] = reply
+        elif "Prompts Visuales 6C" in reply or "Formula 6C" in reply:
+            session["canvas"]["prompts"] = reply
+        elif "Made to Stick" in reply or "SUCCESs" in reply:
+            session["canvas"]["organico"] = reply
+
+        self.save_session(session)
+
+        return {
+            "status": "success",
+            "session": session,
+            "reply": reply,
+            "agent_id": agent_id
+        }
 
 engine = MarketingEngine()
