@@ -2,7 +2,7 @@
 Marketing AI Studio - Core Engine & Multi-Agent Orchestrator
 Nivel 1: Manifiestos de Agentes (.antigravity/agentes/*.md)
 Nivel 2: Subagentes Autónomos en Paralelo (Background Workers)
-Motor: Antigravity CLI Mirror (Sesión Pro de Google)
+Motor: Google Cloud / Gemini AI Companion con Sesión OAuth Pro
 """
 
 import os
@@ -10,8 +10,10 @@ import re
 import json
 import time
 import glob
+import base64
+import urllib.parse
+import urllib.request
 import asyncio
-import subprocess
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 
@@ -19,12 +21,12 @@ BASE_DIR = Path(__file__).resolve().parent
 AGENTS_DIR = BASE_DIR / ".antigravity" / "agentes"
 KB_DIR = BASE_DIR / "knowledge_base"
 CAMPAIGNS_DIR = BASE_DIR / "campaigns"
-CONFIG_FILE = BASE_DIR / "config.json"
+CREDS_FILE = BASE_DIR / "oauth_creds_marketing.json"
+ACCOUNTS_FILE = BASE_DIR / "google_accounts_marketing.json"
 CAMPAIGNS_DIR.mkdir(parents=True, exist_ok=True)
 
-# Perfil aislado de Antigravity para la 2da cuenta
-MARKETING_PROFILE_DIR = Path("C:/Users/PC/.gemini_marketing")
-DEFAULT_PROFILE_DIR = Path("C:/Users/PC/.gemini")
+GOOGLE_CLIENT_ID = "681255809395-oo8ft2oprdrnp9e3aqf6av3hmdib135j.apps.googleusercontent.com"
+GOOGLE_SCOPES = "openid https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email"
 
 class AgentManifest:
     def __init__(self, filename: str, content: str):
@@ -50,8 +52,131 @@ class MarketingEngine:
     def __init__(self):
         self.agents: Dict[str, AgentManifest] = {}
         self.kb_summary: str = ""
+        self.creds: Dict[str, Any] = self._load_creds()
         self.reload_agents()
         self.load_knowledge_base()
+
+    def _load_creds(self) -> Dict[str, Any]:
+        """Carga las credenciales de la 2da cuenta aislada de Google"""
+        # 1. Archivo local del proyecto
+        if CREDS_FILE.exists():
+            try:
+                with open(CREDS_FILE, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+        
+        # 2. Perfil en .gemini_marketing
+        mkt_file = Path("C:/Users/PC/.gemini_marketing/.gemini/oauth_creds.json")
+        if mkt_file.exists():
+            try:
+                with open(mkt_file, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+
+        # 3. /root/.gemini en Docker
+        docker_file = Path("/root/.gemini/oauth_creds.json")
+        if docker_file.exists():
+            try:
+                with open(docker_file, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+
+        return {}
+
+    def get_active_user_email(self) -> str:
+        if not self.creds:
+            return ""
+        id_token = self.creds.get("id_token", "")
+        if id_token and "." in id_token:
+            try:
+                payload = id_token.split(".")[1]
+                # Pad base64
+                payload += "=" * ((4 - len(payload) % 4) % 4)
+                data = json.loads(base64.urlsafe_b64decode(payload).decode("utf-8"))
+                return data.get("email", "")
+            except Exception:
+                pass
+        return self.creds.get("email", "")
+
+    def get_auth_url(self, redirect_uri: str = "http://localhost:8090/auth/callback") -> str:
+        """Genera el enlace de login para conectar isacdiazb@gmail.com"""
+        params = {
+            "client_id": GOOGLE_CLIENT_ID,
+            "redirect_uri": redirect_uri,
+            "response_type": "code",
+            "scope": GOOGLE_SCOPES,
+            "access_type": "offline",
+            "prompt": "consent select_account"
+        }
+        return f"https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(params)}"
+
+    def exchange_code_for_tokens(self, code: str, redirect_uri: str = "http://localhost:8090/auth/callback") -> Dict[str, Any]:
+        """Intercambia el código de autorización por los tokens OAuth de Google"""
+        token_url = "https://oauth2.googleapis.com/token"
+        data = urllib.parse.urlencode({
+            "code": code,
+            "client_id": GOOGLE_CLIENT_ID,
+            "redirect_uri": redirect_uri,
+            "grant_type": "authorization_code"
+        }).encode("utf-8")
+
+        req = urllib.request.Request(token_url, data=data, headers={"Content-Type": "application/x-www-form-urlencoded"})
+        with urllib.request.urlopen(req) as resp:
+            token_data = json.loads(resp.read().decode("utf-8"))
+
+        self.creds = token_data
+        email = self.get_active_user_email()
+        if email:
+            self.creds["email"] = email
+
+        # Guardar en archivo local
+        with open(CREDS_FILE, "w", encoding="utf-8") as f:
+            json.dump(self.creds, f, indent=2)
+
+        # Guardar en .gemini_marketing
+        mkt_dir = Path("C:/Users/PC/.gemini_marketing/.gemini")
+        try:
+            mkt_dir.mkdir(parents=True, exist_ok=True)
+            with open(mkt_dir / "oauth_creds.json", "w", encoding="utf-8") as f:
+                json.dump(self.creds, f, indent=2)
+            with open(mkt_dir / "google_accounts.json", "w", encoding="utf-8") as f:
+                json.dump({"active": email, "old": []}, f, indent=2)
+        except Exception:
+            pass
+
+        return self.creds
+
+    def get_valid_access_token(self) -> Optional[str]:
+        """Obtiene o refresca el token de acceso OAuth"""
+        if not self.creds:
+            self.creds = self._load_creds()
+        if not self.creds:
+            return None
+
+        # Si expiró o necesitamos refrescar
+        refresh_token = self.creds.get("refresh_token")
+        if refresh_token:
+            try:
+                token_url = "https://oauth2.googleapis.com/token"
+                data = urllib.parse.urlencode({
+                    "client_id": GOOGLE_CLIENT_ID,
+                    "refresh_token": refresh_token,
+                    "grant_type": "refresh_token"
+                }).encode("utf-8")
+                req = urllib.request.Request(token_url, data=data, headers={"Content-Type": "application/x-www-form-urlencoded"})
+                with urllib.request.urlopen(req) as resp:
+                    refreshed = json.loads(resp.read().decode("utf-8"))
+                    self.creds["access_token"] = refreshed["access_token"]
+                    with open(CREDS_FILE, "w", encoding="utf-8") as f:
+                        json.dump(self.creds, f, indent=2)
+                    return refreshed["access_token"]
+            except Exception as e:
+                print(f"[Engine] Error refrescando token: {e}")
+
+        return self.creds.get("access_token")
 
     def reload_agents(self):
         """Carga en vivo los manifiestos de agentes desde .antigravity/agentes/"""
@@ -87,27 +212,9 @@ class MarketingEngine:
             for a in self.agents.values()
         ]
 
-    def _find_agy_binary(self) -> Optional[str]:
-        possible_paths = [
-            "C:\\Users\\PC\\.gemini\\bin\\agy.exe",
-            os.path.expanduser("~/.gemini/bin/agy.exe"),
-            os.environ.get("AGY_BIN_PATH"),
-            "/root/.gemini/bin/agy"
-        ]
-        for p in possible_paths:
-            if p and os.path.isfile(p):
-                return p
-        return None
-
-    def _get_active_profile_dir(self) -> str:
-        """Usa el perfil aislado de marketing si existe, o el perfil por defecto"""
-        if (MARKETING_PROFILE_DIR / ".gemini" / "oauth_creds.json").exists() or MARKETING_PROFILE_DIR.exists():
-            return str(MARKETING_PROFILE_DIR)
-        return str(DEFAULT_PROFILE_DIR)
-
     async def execute_agent(self, agent_id: str, prompt: str, context_extra: str = "") -> str:
         """
-        Ejecuta el agente a través del Mirror de Antigravity (agy.exe) con la sesión Pro de Google.
+        Ejecuta el agente utilizando el token OAuth de tu 2da cuenta de Google Pro.
         """
         manifest = self.agents.get(agent_id)
         if not manifest:
@@ -116,52 +223,61 @@ class MarketingEngine:
 
         system_rules = manifest.get_system_prompt() if manifest else ""
         
-        full_instructions = f"""{system_rules}
+        full_system = f"""{system_rules}
 
 ---
-BASE DE CONOCIMIENTO LOCAL:
+BASE DE CONOCIMIENTO DISPONIBLE EN EL SISTEMA:
 {self.kb_summary}
 
----
-CONTEXTO ADICIONAL:
-{context_extra}
-
----
-TAREA / BRIEF DE AGENCIA:
-{prompt}
-
-REGLAS DE RESPUESTA:
-- Responde directamente con el entregable profesional completo en Markdown.
-- Incluye tablas, pasos, estructuras y redacción persuasiva detallada sin recortar información.
+INSTRUCCIONES CLAVE:
+1. Aplica estrictamente las metodologías del manifiesto (Eugene Schwartz, 12 Ángulos, Método 6C, Made to Stick SUCCESs o formatos UGC).
+2. Desarrolla respuestas detalladas, completas y accionables. No resumas ni recortes la entrega.
+3. Formatea todo con Markdown profesional, tablas estructuradas, negritas y llamadas a la acción claras.
 """
-        agy_bin = self._find_agy_binary()
-        if agy_bin:
+        token = self.get_valid_access_token()
+
+        # Si tenemos token OAuth de Google de la 2da cuenta
+        if token:
             try:
-                profile_dir = self._get_active_profile_dir()
-                env = os.environ.copy()
-                env["USERPROFILE"] = profile_dir
-                env["HOME"] = profile_dir
-                env["PYTHONIOENCODING"] = "utf-8"
-
-                proc = await asyncio.create_subprocess_exec(
-                    agy_bin,
-                    "--print",
-                    full_instructions,
-                    "--dangerously-skip-permissions",
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE,
-                    env=env,
-                    cwd=str(BASE_DIR)
+                # Llamada directa a Gemini con el token OAuth del usuario Pro
+                url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+                payload = {
+                    "contents": [{
+                        "parts": [{"text": f"Contexto adicional: {context_extra}\n\nBrief del usuario:\n{prompt}"}]
+                    }],
+                    "systemInstruction": {
+                        "parts": [{"text": full_system}]
+                    }
+                }
+                req = urllib.request.Request(
+                    url,
+                    data=json.dumps(payload).encode("utf-8"),
+                    headers={
+                        "Authorization": f"Bearer {token}",
+                        "Content-Type": "application/json"
+                    }
                 )
-                stdout, stderr = await proc.communicate()
-                output_text = stdout.decode("utf-8", errors="replace").strip()
-                if output_text:
-                    return output_text
+                with urllib.request.urlopen(req, timeout=90) as resp:
+                    res_json = json.loads(resp.read().decode("utf-8"))
+                    text = res_json["candidates"][0]["content"]["parts"][0]["text"]
+                    return text
             except Exception as e:
-                print(f"[Engine] Error ejecutando Antigravity CLI: {e}")
+                print(f"[Engine] Error en llamada con OAuth: {e}")
 
-        return f"""⚠️ No se pudo conectar con el binario de Antigravity.
-Asegúrate de que `agy.exe` esté disponible y la sesión vinculada."""
+        # Si aún no está vinculado, mostrar botón de vinculación
+        return f"""# 🔑 Vinculación Requerida con tu Segunda Cuenta Google
+
+Para procesar tus solicitudes usando tu suscripción Pro de Google de forma 100% aislada:
+
+1. Haz clic en el botón superior **`Vincular Segunda Cuenta Google`** (o entra a [http://localhost:8090/auth/login](http://localhost:8090/auth/login)).
+2. Selecciona **`isacdiazb@gmail.com`** y autoriza el acceso.
+3. ¡Listo! Todo se ejecutará con tu segunda cuenta sin tocar tu cuenta principal.
+
+---
+### 📋 Solicitud en Espera:
+* **Agente:** `{agent_id}`
+* **Brief:** {prompt}
+"""
 
     async def run_parallel_campaign(self, client_name: str, niche: str, product_desc: str, target_audience: str) -> Dict[str, Any]:
         """

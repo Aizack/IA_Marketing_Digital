@@ -143,12 +143,9 @@
         <span class="text-xs px-2.5 py-0.5 rounded-md bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Modo Agencia Pro</span>
       </div>
       <div class="flex items-center gap-3">
-        <span id="ai-key-indicator" class="text-xs px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1.5 cursor-pointer" onclick="openSettingsModal()">
-          <i data-lucide="key" class="w-3.5 h-3.5"></i> Configurar API Key
-        </span>
-        <button onclick="openSettingsModal()" class="p-2 rounded-lg bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 transition" title="Configurar Motor IA">
-          <i data-lucide="settings" class="w-4 h-4"></i>
-        </button>
+        <a href="/auth/login" target="_blank" id="auth-btn" class="text-xs px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium flex items-center gap-1.5 shadow-md shadow-indigo-500/20 transition">
+          <i data-lucide="log-in" class="w-3.5 h-3.5"></i> Vincular isacdiazb@gmail.com
+        </a>
         <button onclick="refreshData()" class="p-2 rounded-lg bg-slate-800/60 hover:bg-slate-700/60 text-slate-300 transition" title="Actualizar datos">
           <i data-lucide="refresh-cw" class="w-4 h-4"></i>
         </button>
@@ -719,13 +716,17 @@
           document.getElementById('status-badge').innerHTML = `<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Conectado`;
           document.getElementById('agent-count').innerText = `${data.agents_loaded} cargados`;
 
-          const keyBadge = document.getElementById('ai-key-indicator');
-          if (data.has_api_key) {
-            keyBadge.className = "text-xs px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center gap-1.5 cursor-pointer";
-            keyBadge.innerHTML = `<i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Gemini Activo (${data.key_preview})`;
+          const authBtn = document.getElementById('auth-btn');
+          if (data.is_authenticated && data.authenticated_account) {
+            authBtn.className = "text-xs px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium flex items-center gap-1.5";
+            authBtn.href = "#";
+            authBtn.removeAttribute("target");
+            authBtn.innerHTML = `<i data-lucide="shield-check" class="w-3.5 h-3.5"></i> ${data.authenticated_account}`;
           } else {
-            keyBadge.className = "text-xs px-2.5 py-1 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 flex items-center gap-1.5 cursor-pointer";
-            keyBadge.innerHTML = `<i data-lucide="key" class="w-3.5 h-3.5"></i> Configurar API Key`;
+            authBtn.className = "text-xs px-3 py-1.5 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium flex items-center gap-1.5 shadow-md shadow-indigo-500/20 transition";
+            authBtn.href = "/auth/login";
+            authBtn.setAttribute("target", "_blank");
+            authBtn.innerHTML = `<i data-lucide="log-in" class="w-3.5 h-3.5"></i> Vincular isacdiazb@gmail.com`;
           }
           lucide.createIcons();
         }
