@@ -1,7 +1,0 @@
-# Transcripción: Formato Trends virales
-
-**Video ID:** `bebec03d-bf23-4594-9ba9-0bce75cb57b6`
-
-## Texto Transcrito
-
-﻿WEBVTT Ya lo tenemos en galería nuestro vídeo, en este caso el vídeo que escogimos para hacer este ejemplo lo tenemos aquí abajo en la línea de tiempo principal. Está cortado simplemente porque a mí me gusta cortarlo donde hace los cambios de clip para luego yo saber y colocar encima, pero bueno no hace falta cortarlo. Entonces utilizamos la música del vídeo de base que nos hemos descargado de TikTok y que hemos añadido. Añadimos en este caso, como la canción dice lo de en inglés, solo recuerda, siempre se ve peor antes de verse mejor, pues en este caso añadimos el texto por encima, en español en este caso. Y nada, y los clips. En este caso no eran vídeos, eran cuatro imágenes y luego ya el clip final, que nosotros lo que hacemos para convertirlo en un anuncio es añadir el producto y hacemos como que después ya tiene la piel bien y añadimos el producto. Así que eso sería todo en cuanto a los trens virales.

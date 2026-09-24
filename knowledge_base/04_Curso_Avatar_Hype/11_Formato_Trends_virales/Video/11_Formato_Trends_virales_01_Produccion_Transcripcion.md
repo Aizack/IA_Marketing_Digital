@@ -1,7 +1,0 @@
-# Transcripción: Formato Trends virales
-
-**Video ID:** `b770b590-3705-4d57-a5cc-9e09adc8a853`
-
-## Texto Transcrito
-
-﻿WEBVTT Just remember, it always looks worse, before it looks better. Bueno, vamos a ir con el formato trends virales, en este caso para un producto físico que puede ser, pues en este caso, una crema para el acné o algo. La forma de hacerlo es exactamente igual que el formato voz en off que acabamos de ver en el vídeo anterior, o sea, exactamente igual, la generación de imagen y luego animar el clip con proc. Pero lo que sí que cambia es que la inspiración la encontramos en TikTok, en vídeos así. Y lo que vamos a hacer cuando encontremos el vídeo que queremos copiar, entre comillas, que queremos replicar, mejor dicho, esa es la palabra. Bueno, casualidad que este vídeo no nos va a dejar descargarnoslo. No nos deja descargaros el vídeo, que es raro, pero igual a algunos pasa. Clic derecho y copiamos el link, o desde aquí, y buscamos download TikTok from link. Vamos a descargar TikTok de link y mira, este mismo, por ejemplo, pegaríamos aquí el link y le daríamos a descargar. Y descargar sin la marca de agua o con la marca de agua da exactamente igual porque solo lo vamos a utilizar como la base, o sea, encima vamos a poner nuestros clips. Pero bueno, sin marca de agua mismamente. Cuando se abra la publicidad le dais a cerrar y ahí se va a descargar, no tenéis que tocar nada más.

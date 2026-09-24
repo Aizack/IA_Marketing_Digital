@@ -1,7 +1,6 @@
 """
-Marketing AI Studio V3 - Native Chromium Desktop Application
-Lanza la aplicación como una Ventana de Escritorio Nativa Independiente (Chromium App Mode)
-con perfil aislado, libre de pestañas, barras de navegación y problemas de caché.
+Marketing AI Studio V3 - Native Chromium Desktop Window Wrapper
+Lanza la aplicación en una Ventana Nativa de Escritorio Independiente (Edge WebView2 / Chromium App).
 """
 
 import os
@@ -10,14 +9,6 @@ import time
 import subprocess
 import threading
 import uvicorn
-
-# Ensure active account is diazbisac@gmail.com
-sys.path.append(r"C:\Users\PC\.gemini")
-try:
-    import manage_vault
-    manage_vault.switch_to_main()
-except Exception as e:
-    print(f"[DesktopApp] Vault notice: {e}")
 
 from server import app
 
@@ -41,7 +32,7 @@ def launch_chromium_window():
             break
 
     if not exe_path:
-        print("⚠️ No se encontró msedge.exe ni chrome.exe en las rutas estándar.")
+        print("⚠️ No se encontró ejecutable de Chromium. Abriendo navegador predeterminado...")
         import webbrowser
         webbrowser.open(url)
         return
@@ -55,7 +46,7 @@ def launch_chromium_window():
         "--window-size=1440,900"
     ]
     
-    print(f"🖥️ Abriendo Ventana de Escritorio Nativa con: {exe_path}")
+    print(f"🖥️ Abriendo Ventana Nativa de Escritorio: {exe_path}")
     subprocess.run(cmd)
 
 if __name__ == "__main__":
