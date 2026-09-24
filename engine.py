@@ -21,10 +21,10 @@ from typing import Dict, List, Any, Optional
 
 BASE_DIR = Path(__file__).resolve().parent
 AGENTS_DIR = BASE_DIR / ".antigravity" / "agentes"
-KB_DIR = BASE_DIR / "knowledge_base"
-CAMPAIGNS_DIR = BASE_DIR / "campaigns"
 CREDS_FILE = BASE_DIR / "oauth_creds_marketing.json"
 PKCE_STATE_FILE = BASE_DIR / ".pkce_state.json"
+PORTABLE_AGY_BIN = Path("D:/Antigravity_Marketing/bin/agy.exe")
+PORTABLE_DATA_DIR = Path("D:/Antigravity_Marketing/data")
 CAMPAIGNS_DIR.mkdir(parents=True, exist_ok=True)
 
 def _load_oauth_config() -> tuple:
@@ -71,6 +71,16 @@ class MarketingEngine:
 
     def _load_creds(self) -> Dict[str, Any]:
         """Carga las credenciales de la 2da cuenta aislada de Google"""
+        # 1. Portable D: drive
+        portable_file = PORTABLE_DATA_DIR / ".gemini" / "oauth_creds.json"
+        if portable_file.exists():
+            try:
+                with open(portable_file, "r", encoding="utf-8") as f:
+                    return json.load(f)
+            except Exception:
+                pass
+
+        # 2. Archivo local del proyecto
         if CREDS_FILE.exists():
             try:
                 with open(CREDS_FILE, "r", encoding="utf-8") as f:
@@ -78,6 +88,7 @@ class MarketingEngine:
             except Exception:
                 pass
         
+        # 3. Perfil en .gemini_marketing
         mkt_file = Path("C:/Users/PC/.gemini_marketing/.gemini/oauth_creds.json")
         if mkt_file.exists():
             try:
@@ -86,6 +97,7 @@ class MarketingEngine:
             except Exception:
                 pass
 
+        # 4. /root/.gemini en Docker
         docker_file = Path("/root/.gemini/oauth_creds.json")
         if docker_file.exists():
             try:
@@ -261,8 +273,49 @@ INSTRUCCIONES CLAVE:
 2. Desarrolla respuestas detalladas, completas y accionables. No resumas ni recortes la entrega.
 3. Formatea todo con Markdown profesional, tablas estructuradas, negritas y llamadas a la acción claras.
 """
-        token = self.get_valid_access_token()
+        # 1. Intentar ejecución vía Antigravity Portable en Disco D:
+        if PORTABLE_AGY_BIN.exists():
+            try:
+                env = os.environ.copy()
+                env["USERPROFILE"] = str(PORTABLE_DATA_DIR)
+                env["HOME"] = str(PORTABLE_DATA_DIR)
+                env["HOMEDRIVE"] = "D:"
+                env["HOMEPATH"] = "\\Antigravity_Marketing\\data"
+                env["PYTHONIOENCODING"] = "utf-8"
 
+                full_prompt = f"""{system_rules}
+
+---
+BASE DE CONOCIMIENTO LOCAL:
+{self.kb_summary}
+
+---
+CONTEXTO ADICIONAL:
+{context_extra}
+
+---
+BRIEF DE AGENCIA:
+{prompt}
+"""
+                proc = await asyncio.create_subprocess_exec(
+                    str(PORTABLE_AGY_BIN),
+                    "--print",
+                    full_prompt,
+                    "--dangerously-skip-permissions",
+                    stdout=asyncio.subprocess.PIPE,
+                    stderr=asyncio.subprocess.PIPE,
+                    env=env,
+                    cwd=str(BASE_DIR)
+                )
+                stdout, stderr = await proc.communicate()
+                output_text = stdout.decode("utf-8", errors="replace").strip()
+                if output_text and len(output_text) > 50:
+                    return output_text
+            except Exception as e:
+                print(f"[Engine] Error ejecutando Antigravity Portable D:: {e}")
+
+        # 2. Intentar llamada con token OAuth
+        token = self.get_valid_access_token()
         if token:
             try:
                 url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
@@ -289,13 +342,14 @@ INSTRUCCIONES CLAVE:
             except Exception as e:
                 print(f"[Engine] Error en llamada con OAuth: {e}")
 
-        return f"""# 🔑 Vinculación Requerida con tu Segunda Cuenta Google
+        return f"""# 🔑 Vinculación Requerida para Antigravity Pro en Disco D:
 
-Para procesar tus solicitudes usando tu suscripción Pro de Google de forma 100% aislada:
+Para procesar tus solicitudes usando tu suscripción Pro de Google en la carpeta aislada de `D:\\Antigravity_Marketing`:
 
-1. Haz clic en el botón superior **`Vincular isacdiazb@gmail.com`** (o entra a [http://localhost:8090/auth/login](http://localhost:8090/auth/login)).
-2. Selecciona **`isacdiazb@gmail.com`** y autoriza el acceso.
-3. ¡Listo! Todo se ejecutará con tu segunda cuenta sin tocar tu cuenta principal.
+1. Haz doble clic en el acceso directo de tu Escritorio **`Antigravity Pro (Disco D)`**.
+2. En la consola negra que se abre, escribe: `hola` (y presiona Enter).
+3. Se abrirá el navegador para seleccionar tu segunda cuenta **`isacdiazb@gmail.com`**.
+4. ¡Listo! La sesión se guardará 100% aislada en Disco D: sin tocar tu cuenta del ERP.
 
 ---
 ### 📋 Solicitud en Espera:
