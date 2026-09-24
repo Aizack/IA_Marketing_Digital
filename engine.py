@@ -307,7 +307,7 @@ BRIEF DE AGENCIA:
                     str(PORTABLE_AGY_BIN),
                     "--print",
                     full_prompt,
-                    "--model", "gemini-2.5-flash",
+                    "--model", "gemini-3.7-flash",
                     "--effort", "medium",
                     "--dangerously-skip-permissions",
                     stdout=asyncio.subprocess.PIPE,
@@ -326,7 +326,7 @@ BRIEF DE AGENCIA:
         token = self.get_valid_access_token()
         if token:
             try:
-                url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
+                url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent"
                 payload = {
                     "contents": [{
                         "parts": [{"text": f"Contexto adicional: {context_extra}\n\nBrief del usuario:\n{prompt}"}]

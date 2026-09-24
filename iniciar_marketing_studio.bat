@@ -1,13 +1,12 @@
 @echo off
-title Marketing AI Studio - (isacdiazb@gmail.com)
+title Marketing AI Studio V3 - (diazbisac@gmail.com)
 echo ======================================================================
-echo   INICIANDO MARKETING AI STUDIO
+echo   INICIANDO MARKETING AI STUDIO V3 - CONVENTIONAL CHAT ENGINE
+echo   Cuenta: diazbisac@gmail.com | Modelo: Gemini 3.7 Flash (Medium)
 echo ======================================================================
 echo.
 
-python C:\Users\PC\.gemini\manage_vault.py marketing
-
-echo Abriendo la aplicacion en tu navegador...
+echo Abriendo la aplicacion conversacional en tu navegador...
 start http://localhost:8090
 
 echo.
