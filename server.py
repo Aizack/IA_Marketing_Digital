@@ -40,15 +40,31 @@ class FullCampaignRequest(BaseModel):
     product_desc: str
     target_audience: str
 
+class SettingsRequest(BaseModel):
+    api_key: str
+    model: Optional[str] = "gemini-2.5-flash"
+
 @app.get("/health")
 def health_check():
+    settings = engine.get_settings()
     return {
         "status": "healthy",
         "service": "marketing-ai-studio-engine",
         "timestamp": time.time(),
         "agents_loaded": len(engine.agents),
-        "knowledge_base_ready": bool(engine.kb_summary)
+        "knowledge_base_ready": bool(engine.kb_summary),
+        "has_api_key": settings["has_key"],
+        "key_preview": settings["key_preview"]
     }
+
+@app.get("/api/settings")
+def get_settings():
+    return engine.get_settings()
+
+@app.post("/api/settings")
+def update_settings(req: SettingsRequest):
+    engine.save_settings(req.api_key, req.model or "gemini-2.5-flash")
+    return {"status": "success", "message": "Configuración guardada correctamente", "settings": engine.get_settings()}
 
 @app.get("/api/agents")
 def get_agents():

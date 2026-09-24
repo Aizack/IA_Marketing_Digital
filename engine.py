@@ -2,6 +2,7 @@
 Marketing AI Studio - Core Engine & Multi-Agent Orchestrator
 Nivel 1: Manifiestos de Agentes (.antigravity/agentes/*.md)
 Nivel 2: Subagentes Autónomos en Paralelo (Background Workers)
+Motor LLM: Google GenAI SDK (Gemini 2.5/2.0 Flash / Pro) + Antigravity CLI
 """
 
 import os
@@ -10,14 +11,14 @@ import json
 import time
 import glob
 import asyncio
-import subprocess
 from pathlib import Path
-from typing import Dict, List, Any, Optional, AsyncGenerator
+from typing import Dict, List, Any, Optional
 
 BASE_DIR = Path(__file__).resolve().parent
 AGENTS_DIR = BASE_DIR / ".antigravity" / "agentes"
 KB_DIR = BASE_DIR / "knowledge_base"
 CAMPAIGNS_DIR = BASE_DIR / "campaigns"
+CONFIG_FILE = BASE_DIR / "config.json"
 CAMPAIGNS_DIR.mkdir(parents=True, exist_ok=True)
 
 class AgentManifest:
@@ -44,8 +45,39 @@ class MarketingEngine:
     def __init__(self):
         self.agents: Dict[str, AgentManifest] = {}
         self.kb_summary: str = ""
+        self.api_key: str = self._load_api_key()
+        self.model_name: str = "gemini-2.5-flash"
         self.reload_agents()
         self.load_knowledge_base()
+
+    def _load_api_key(self) -> str:
+        # 1. Desde variable de entorno
+        key = os.environ.get("GEMINI_API_KEY", "")
+        if key:
+            return key
+        # 2. Desde config.json
+        if CONFIG_FILE.exists():
+            try:
+                with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    return data.get("api_key", "")
+            except Exception:
+                pass
+        return ""
+
+    def save_settings(self, api_key: str, model_name: str = "gemini-2.5-flash"):
+        self.api_key = api_key.strip()
+        self.model_name = model_name
+        os.environ["GEMINI_API_KEY"] = self.api_key
+        with open(CONFIG_FILE, "w", encoding="utf-8") as f:
+            json.dump({"api_key": self.api_key, "model": self.model_name}, f, indent=2)
+
+    def get_settings(self) -> Dict[str, Any]:
+        return {
+            "has_key": bool(self.api_key),
+            "key_preview": f"{self.api_key[:6]}...{self.api_key[-4:]}" if len(self.api_key) > 10 else "",
+            "model": self.model_name
+        }
 
     def reload_agents(self):
         """Carga en vivo los manifiestos de agentes desde .antigravity/agentes/"""
@@ -64,10 +96,10 @@ class MarketingEngine:
         summaries = []
         if KB_DIR.exists():
             for file in KB_DIR.rglob("*.md"):
-                summaries.append(f"Documento disponible: {file.relative_to(KB_DIR)}")
+                summaries.append(f"- {file.relative_to(KB_DIR)}")
             for file in KB_DIR.rglob("*.txt"):
-                summaries.append(f"Transcripción disponible: {file.relative_to(KB_DIR)}")
-        self.kb_summary = "\n".join(summaries)
+                summaries.append(f"- {file.relative_to(KB_DIR)}")
+        self.kb_summary = "\n".join(summaries[:50])
 
     def get_available_agents(self) -> List[Dict[str, Any]]:
         self.reload_agents()
@@ -81,31 +113,9 @@ class MarketingEngine:
             for a in self.agents.values()
         ]
 
-    def get_agent_prompt(self, agent_id: str) -> Optional[str]:
-        self.reload_agents()
-        if agent_id in self.agents:
-            return self.agents[agent_id].get_system_prompt()
-        return None
-
-    def _find_agy_binary(self) -> Optional[str]:
-        """Busca el binario agy en las rutas estándar de Windows o Linux"""
-        possible_paths = [
-            os.environ.get("AGY_BIN_PATH"),
-            "/usr/local/bin/agy",
-            "/root/.gemini/bin/agy",
-            "/app/bin/agy",
-            os.path.expanduser("~/.gemini/bin/agy.exe"),
-            os.path.expanduser("~/.gemini/bin/agy"),
-            "C:\\Users\\PC\\.gemini\\bin\\agy.exe"
-        ]
-        for p in possible_paths:
-            if p and os.path.isfile(p):
-                return p
-        return None
-
     async def execute_agent(self, agent_id: str, prompt: str, context_extra: str = "") -> str:
         """
-        Ejecuta una tarea con el agente correspondiente inyectando su manifiesto y base de conocimiento.
+        Ejecuta el agente con su manifiesto, la base de conocimiento y el modelo de IA.
         """
         manifest = self.agents.get(agent_id)
         if not manifest:
@@ -114,70 +124,61 @@ class MarketingEngine:
 
         system_rules = manifest.get_system_prompt() if manifest else ""
         
-        full_instructions = f"""
-{system_rules}
+        full_system = f"""{system_rules}
 
 ---
-### CONTEXTO DE EJECUCIÓN:
-Base de Conocimiento Local Disponible:
+BASE DE CONOCIMIENTO DISPONIBLE EN EL SISTEMA:
 {self.kb_summary}
 
-{context_extra}
-
----
-### TAREA / BRIEF DEL USUARIO:
-{prompt}
-
-Responde de manera estructurada, con rigor profesional de agencia, tablas limpias en Markdown y sin preámbulos innecesarios.
+INSTRUCCIONES CLAVE:
+1. Aplica estrictamente las metodologías del manifiesto (Eugene Schwartz, 12 Ángulos, Método 6C, Made to Stick SUCCESs o formatos UGC).
+2. Desarrolla respuestas detalladas, completas y accionables. No resumas ni recortes la entrega.
+3. Formatea todo con Markdown profesional, tablas estructuradas, negritas y llamadas a la acción claras.
 """
-        # Intentar ejecutar vía agy CLI si está disponible
-        agy_bin = self._find_agy_binary()
-        if agy_bin:
+
+        # 1. Ejecutar con Google GenAI SDK si hay API Key configurada
+        if self.api_key:
             try:
-                proc = await asyncio.create_subprocess_exec(
-                    agy_bin,
-                    "--print",
-                    full_instructions,
-                    "--dangerously-skip-permissions",
-                    stdout=asyncio.subprocess.PIPE,
-                    stderr=asyncio.subprocess.PIPE,
-                    cwd=str(BASE_DIR)
-                )
-                stdout, stderr = await proc.communicate()
-                if proc.returncode == 0 and stdout:
-                    return stdout.decode("utf-8", errors="replace").strip()
+                from google import genai
+                client = genai.Client(api_key=self.api_key)
+                
+                # Intentar modelos en orden de preferencia
+                models_to_try = [self.model_name, "gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"]
+                last_error = None
+                
+                for m in models_to_try:
+                    try:
+                        response = client.models.generate_content(
+                            model=m,
+                            contents=f"Contexto adicional: {context_extra}\n\nBrief del usuario:\n{prompt}",
+                            config={"system_instruction": full_system}
+                        )
+                        if response and response.text:
+                            return response.text
+                    except Exception as err:
+                        last_error = err
+                        continue
+
+                if last_error:
+                    return f"⚠️ Error llamando a Gemini ({last_error}). Verifica tu API Key en Configuración."
             except Exception as e:
-                print(f"[Engine] Error ejecutando agy binario: {e}")
+                print(f"[Engine] Error en Google GenAI: {e}")
 
-        # Si no hay binario directo o está en contenedor puente, se procesa con el motor local
-        return self._simulate_or_fallback_generate(agent_id, prompt, manifest)
+        # 2. Si no hay API Key configurada, mostrar guía amigable en el resultado
+        return f"""# ⚠️ API Key Requerida para Generación en Vivo
 
-    def _simulate_or_fallback_generate(self, agent_id: str, prompt: str, manifest: Optional[AgentManifest]) -> str:
-        """Fallback estructurado que procesa el requerimiento con los templates y reglas de agencia"""
-        agent_name = manifest.name if manifest else agent_id
-        timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-        
-        return f"""# 📊 Entrega de Agencia: {agent_name}
-**Fecha:** {timestamp}
-**Estado:** Generado con éxito bajo el estándar Antigravity v2.0
+Para activar las respuestas de IA en vivo sin límites:
 
----
+1. Ve a **⚙️ Configuración** (en la esquina superior derecha o en la barra lateral).
+2. Pega la **API Key** de tu 2da cuenta de Google (de [Google AI Studio](https://aistudio.google.com/app/apikey)).
+3. Haz clic en **Guardar**.
 
-## 🎯 Diagnóstico y Solución para:
-> "{prompt[:150]}..."
-
-### 1. Marco Estratégico Aplicado
-- **Nivel de Consciencia Identificado:** Solución Consciente (Problem-Aware a Solution-Aware).
-- **Mecanismo Único:** Metodología de Alto Rendimiento validada con casos de éxito.
-- **Ángulo de Ataque:** Dolor Latente -> Quiebre de Creencias -> Presentación del Mecanismo.
-
-### 2. Contenido & Entregable Principal
-*(El agente ha procesado la base de conocimiento para entregar la solución según el manifiesto `{agent_id}.md`)*
-
-{prompt}
+Una vez guardada, todos los agentes procesarán tus briefs en tiempo real con la potencia de Gemini.
 
 ---
-✅ **Revisión de Calidad:** Cumple con el estándar de persuasión y direct-response marketing.
+### 📋 Vista Previa del Brief Recibido:
+* **Agente Solicitado:** `{agent_id}`
+* **Requerimiento:** {prompt}
 """
 
     async def run_parallel_campaign(self, client_name: str, niche: str, product_desc: str, target_audience: str) -> Dict[str, Any]:
@@ -190,13 +191,12 @@ Responde de manera estructurada, con rigor profesional de agencia, tablas limpia
         campaign_folder.mkdir(parents=True, exist_ok=True)
 
         brief_text = f"""
-CLIENTE / PRODUCTO: {client_name}
+CLIENTE / MARCA: {client_name}
 NICHO: {niche}
 DESCRIPCIÓN DE LA OFERTA: {product_desc}
 AUDIENCIA OBJETIVO: {target_audience}
 """
 
-        # Definir las tareas especializadas para cada subagente
         async def task_estratega():
             prompt = f"Desarrolla el diagnóstico completo del Avatar, Nivel de Sofisticación, 3 Ángulos de Venta ganadores, el Mecanismo Único y la Oferta Irresistible para:\n{brief_text}"
             res = await self.execute_agent("01_director_estratega_marketing", prompt)
@@ -225,7 +225,6 @@ AUDIENCIA OBJETIVO: {target_audience}
                 f.write(res)
             return {"module": "organico", "title": "🧲 Contenido Orgánico Made to Stick", "result": res}
 
-        # Ejecución paralela en segundo plano (Nivel 2)
         results = await asyncio.gather(
             task_estratega(),
             task_ugc(),
@@ -234,21 +233,17 @@ AUDIENCIA OBJETIVO: {target_audience}
             return_exceptions=True
         )
 
-        # Crear reporte maestro de campaña
         master_report = f"""# 🚀 Campaña 360°: {client_name}
 **Nicho:** {niche}
-**Generado el:** {time.strftime('%Y-%m-%d %H:%M:%S')}
-**Carpeta de Entrega:** `{campaign_folder.name}`
+**Fecha:** {time.strftime('%Y-%m-%d %H:%M:%S')}
+**Carpeta:** `{campaign_folder.name}`
 
 ---
-
-## 📁 Archivos Generados en esta Campaña:
+## 📁 Entregables Generados:
 1. `01_Estrategia_y_Avatar.md`
 2. `02_Guiones_UGC_Clip_a_Clip.md`
 3. `03_Prompts_Visuales_6C.md`
 4. `04_Contenido_Organico_SUCCESs.md`
-
-Todos los entregables han sido generados en paralelo y almacenados en la carpeta de campañas.
 """
         with open(campaign_folder / "README_Campana.md", "w", encoding="utf-8") as f:
             f.write(master_report)
