@@ -21,10 +21,14 @@ from typing import Dict, List, Any, Optional
 
 BASE_DIR = Path(__file__).resolve().parent
 AGENTS_DIR = BASE_DIR / ".antigravity" / "agentes"
+KB_DIR = BASE_DIR / "knowledge_base"
+CAMPAIGNS_DIR = BASE_DIR / "campanas"
 CREDS_FILE = BASE_DIR / "oauth_creds_marketing.json"
 PKCE_STATE_FILE = BASE_DIR / ".pkce_state.json"
 PORTABLE_AGY_BIN = Path("D:/Antigravity_Marketing/bin/agy.exe")
 PORTABLE_DATA_DIR = Path("D:/Antigravity_Marketing/data")
+
+KB_DIR.mkdir(parents=True, exist_ok=True)
 CAMPAIGNS_DIR.mkdir(parents=True, exist_ok=True)
 
 def _load_oauth_config() -> tuple:
