@@ -230,7 +230,11 @@ if GUI_DIR.exists():
 def serve_index():
     index_file = GUI_DIR / "index.html"
     if index_file.exists():
-        return FileResponse(str(index_file))
+        response = FileResponse(str(index_file))
+        response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
     return HTMLResponse("<h2>Marketing AI Studio Backend Running. GUI not found in /gui.</h2>")
 
 if __name__ == "__main__":
