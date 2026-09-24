@@ -12,6 +12,9 @@ ENV/
 # Antigravity temporary sessions / logs
 .antigravity/sessions/
 *.log
+oauth_config.json
+oauth_creds*.json
+.pkce_state.json
 
 # Windows & OS
 Thumbs.db

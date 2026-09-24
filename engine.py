@@ -2,7 +2,7 @@
 Marketing AI Studio - Core Engine & Multi-Agent Orchestrator
 Nivel 1: Manifiestos de Agentes (.antigravity/agentes/*.md)
 Nivel 2: Subagentes Autónomos en Paralelo (Background Workers)
-Motor: Google Cloud / Gemini AI Companion con Sesión OAuth Pro
+Motor: Google Cloud / Gemini AI Companion con Sesión OAuth Pro (PKCE + Client Secret)
 """
 
 import os
@@ -11,6 +11,8 @@ import json
 import time
 import glob
 import base64
+import hashlib
+import secrets
 import urllib.parse
 import urllib.request
 import asyncio
@@ -22,10 +24,21 @@ AGENTS_DIR = BASE_DIR / ".antigravity" / "agentes"
 KB_DIR = BASE_DIR / "knowledge_base"
 CAMPAIGNS_DIR = BASE_DIR / "campaigns"
 CREDS_FILE = BASE_DIR / "oauth_creds_marketing.json"
-ACCOUNTS_FILE = BASE_DIR / "google_accounts_marketing.json"
+PKCE_STATE_FILE = BASE_DIR / ".pkce_state.json"
 CAMPAIGNS_DIR.mkdir(parents=True, exist_ok=True)
 
-GOOGLE_CLIENT_ID = "681255809395-oo8ft2oprdrnp9e3aqf6av3hmdib135j.apps.googleusercontent.com"
+def _load_oauth_config() -> tuple:
+    oauth_file = BASE_DIR / "oauth_config.json"
+    if oauth_file.exists():
+        try:
+            with open(oauth_file, "r", encoding="utf-8") as f:
+                d = json.load(f)
+                return d.get("client_id", ""), d.get("client_secret", "")
+        except Exception:
+            pass
+    return os.environ.get("GOOGLE_CLIENT_ID", ""), os.environ.get("GOOGLE_CLIENT_SECRET", "")
+
+GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET = _load_oauth_config()
 GOOGLE_SCOPES = "openid https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email"
 
 class AgentManifest:
@@ -58,7 +71,6 @@ class MarketingEngine:
 
     def _load_creds(self) -> Dict[str, Any]:
         """Carga las credenciales de la 2da cuenta aislada de Google"""
-        # 1. Archivo local del proyecto
         if CREDS_FILE.exists():
             try:
                 with open(CREDS_FILE, "r", encoding="utf-8") as f:
@@ -66,7 +78,6 @@ class MarketingEngine:
             except Exception:
                 pass
         
-        # 2. Perfil en .gemini_marketing
         mkt_file = Path("C:/Users/PC/.gemini_marketing/.gemini/oauth_creds.json")
         if mkt_file.exists():
             try:
@@ -75,7 +86,6 @@ class MarketingEngine:
             except Exception:
                 pass
 
-        # 3. /root/.gemini en Docker
         docker_file = Path("/root/.gemini/oauth_creds.json")
         if docker_file.exists():
             try:
@@ -93,7 +103,6 @@ class MarketingEngine:
         if id_token and "." in id_token:
             try:
                 payload = id_token.split(".")[1]
-                # Pad base64
                 payload += "=" * ((4 - len(payload) % 4) % 4)
                 data = json.loads(base64.urlsafe_b64decode(payload).decode("utf-8"))
                 return data.get("email", "")
@@ -102,26 +111,50 @@ class MarketingEngine:
         return self.creds.get("email", "")
 
     def get_auth_url(self, redirect_uri: str = "http://localhost:8090/auth/callback") -> str:
-        """Genera el enlace de login para conectar isacdiazb@gmail.com"""
+        """Genera el enlace de login con PKCE para conectar isacdiazb@gmail.com"""
+        verifier = secrets.token_urlsafe(64)
+        challenge = base64.urlsafe_b64encode(hashlib.sha256(verifier.encode("ascii")).digest()).decode("ascii").rstrip("=")
+        
+        # Guardar verifier temporal para el intercambio
+        with open(PKCE_STATE_FILE, "w", encoding="utf-8") as f:
+            json.dump({"verifier": verifier, "redirect_uri": redirect_uri}, f)
+
         params = {
             "client_id": GOOGLE_CLIENT_ID,
             "redirect_uri": redirect_uri,
             "response_type": "code",
             "scope": GOOGLE_SCOPES,
+            "code_challenge": challenge,
+            "code_challenge_method": "S256",
             "access_type": "offline",
             "prompt": "consent select_account"
         }
         return f"https://accounts.google.com/o/oauth2/v2/auth?{urllib.parse.urlencode(params)}"
 
     def exchange_code_for_tokens(self, code: str, redirect_uri: str = "http://localhost:8090/auth/callback") -> Dict[str, Any]:
-        """Intercambia el código de autorización por los tokens OAuth de Google"""
+        """Intercambia el código de autorización por los tokens OAuth de Google usando PKCE y Client Secret"""
+        verifier = ""
+        if PKCE_STATE_FILE.exists():
+            try:
+                with open(PKCE_STATE_FILE, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    verifier = data.get("verifier", "")
+                    redirect_uri = data.get("redirect_uri", redirect_uri)
+            except Exception:
+                pass
+
         token_url = "https://oauth2.googleapis.com/token"
-        data = urllib.parse.urlencode({
+        params = {
             "code": code,
             "client_id": GOOGLE_CLIENT_ID,
+            "client_secret": GOOGLE_CLIENT_SECRET,
             "redirect_uri": redirect_uri,
             "grant_type": "authorization_code"
-        }).encode("utf-8")
+        }
+        if verifier:
+            params["code_verifier"] = verifier
+
+        data = urllib.parse.urlencode(params).encode("utf-8")
 
         req = urllib.request.Request(token_url, data=data, headers={"Content-Type": "application/x-www-form-urlencoded"})
         with urllib.request.urlopen(req) as resp:
@@ -132,20 +165,14 @@ class MarketingEngine:
         if email:
             self.creds["email"] = email
 
-        # Guardar en archivo local
         with open(CREDS_FILE, "w", encoding="utf-8") as f:
             json.dump(self.creds, f, indent=2)
 
-        # Guardar en .gemini_marketing
-        mkt_dir = Path("C:/Users/PC/.gemini_marketing/.gemini")
-        try:
-            mkt_dir.mkdir(parents=True, exist_ok=True)
-            with open(mkt_dir / "oauth_creds.json", "w", encoding="utf-8") as f:
-                json.dump(self.creds, f, indent=2)
-            with open(mkt_dir / "google_accounts.json", "w", encoding="utf-8") as f:
-                json.dump({"active": email, "old": []}, f, indent=2)
-        except Exception:
-            pass
+        if PKCE_STATE_FILE.exists():
+            try:
+                PKCE_STATE_FILE.unlink()
+            except Exception:
+                pass
 
         return self.creds
 
@@ -156,13 +183,13 @@ class MarketingEngine:
         if not self.creds:
             return None
 
-        # Si expiró o necesitamos refrescar
         refresh_token = self.creds.get("refresh_token")
         if refresh_token:
             try:
                 token_url = "https://oauth2.googleapis.com/token"
                 data = urllib.parse.urlencode({
                     "client_id": GOOGLE_CLIENT_ID,
+                    "client_secret": GOOGLE_CLIENT_SECRET,
                     "refresh_token": refresh_token,
                     "grant_type": "refresh_token"
                 }).encode("utf-8")
@@ -236,10 +263,8 @@ INSTRUCCIONES CLAVE:
 """
         token = self.get_valid_access_token()
 
-        # Si tenemos token OAuth de Google de la 2da cuenta
         if token:
             try:
-                # Llamada directa a Gemini con el token OAuth del usuario Pro
                 url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent"
                 payload = {
                     "contents": [{
@@ -264,12 +289,11 @@ INSTRUCCIONES CLAVE:
             except Exception as e:
                 print(f"[Engine] Error en llamada con OAuth: {e}")
 
-        # Si aún no está vinculado, mostrar botón de vinculación
         return f"""# 🔑 Vinculación Requerida con tu Segunda Cuenta Google
 
 Para procesar tus solicitudes usando tu suscripción Pro de Google de forma 100% aislada:
 
-1. Haz clic en el botón superior **`Vincular Segunda Cuenta Google`** (o entra a [http://localhost:8090/auth/login](http://localhost:8090/auth/login)).
+1. Haz clic en el botón superior **`Vincular isacdiazb@gmail.com`** (o entra a [http://localhost:8090/auth/login](http://localhost:8090/auth/login)).
 2. Selecciona **`isacdiazb@gmail.com`** y autoriza el acceso.
 3. ¡Listo! Todo se ejecutará con tu segunda cuenta sin tocar tu cuenta principal.
 

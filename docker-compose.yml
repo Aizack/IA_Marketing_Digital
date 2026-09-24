@@ -18,10 +18,12 @@ services:
       - ./knowledge_base:/app/knowledge_base:ro
       # Carpeta persistente para todas las campañas generadas
       - ./campaigns:/app/campaigns
-      # Mapeo de la sesión/credenciales de tu cuenta de Google
-      - ${USERPROFILE}/.gemini:/root/.gemini:ro
+      # Archivos de configuración de OAuth y credenciales
+      - ./oauth_config.json:/app/oauth_config.json:ro
+      - ./oauth_creds_marketing.json:/app/oauth_creds_marketing.json
+      - ./.pkce_state.json:/app/.pkce_state.json
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
       interval: 30s
       timeout: 5s
       retries: 3
