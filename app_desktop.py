@@ -1,23 +1,23 @@
 """
-Marketing AI Studio V3 - Standalone Chromium Desktop Application Wrapper
-Lanza la aplicación como una ventana de escritorio nativa independiente (WebView2 / Chromium),
-desvinculada completamente de los navegadores locales y de problemas de caché.
+Marketing AI Studio V3 - Native Chromium Desktop Application
+Lanza la aplicación como una Ventana de Escritorio Nativa Independiente (Chromium App Mode)
+con perfil aislado, libre de pestañas, barras de navegación y problemas de caché.
 """
 
 import os
 import sys
 import time
+import subprocess
 import threading
 import uvicorn
-import webview
 
-# Ensure C:\Users\PC\.gemini is in path for vault manager
+# Ensure active account is diazbisac@gmail.com
 sys.path.append(r"C:\Users\PC\.gemini")
 try:
     import manage_vault
     manage_vault.switch_to_main()
 except Exception as e:
-    print(f"[DesktopApp] Note: Vault switch error: {e}")
+    print(f"[DesktopApp] Vault notice: {e}")
 
 from server import app
 
@@ -26,25 +26,40 @@ def start_backend():
     print(f"🚀 Iniciando servidor FastAPI en 127.0.0.1:{port}...")
     uvicorn.run(app, host="127.0.0.1", port=port, log_level="warning")
 
+def launch_chromium_window():
+    url = "http://127.0.0.1:8090"
+    profile_dir = os.path.join(os.path.dirname(__file__), ".app_profile")
+    
+    edge_exe = r"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe"
+    edge_64 = r"C:\Program Files\Microsoft\Edge\Application\msedge.exe"
+    chrome_exe = r"C:\Program Files\Google\Chrome\Application\chrome.exe"
+    
+    exe_path = None
+    for p in [edge_exe, edge_64, chrome_exe]:
+        if os.path.exists(p):
+            exe_path = p
+            break
+
+    if not exe_path:
+        print("⚠️ No se encontró msedge.exe ni chrome.exe en las rutas estándar.")
+        import webbrowser
+        webbrowser.open(url)
+        return
+
+    cmd = [
+        exe_path,
+        f"--app={url}",
+        f"--user-data-dir={profile_dir}",
+        "--no-first-run",
+        "--no-default-browser-check",
+        "--window-size=1440,900"
+    ]
+    
+    print(f"🖥️ Abriendo Ventana de Escritorio Nativa con: {exe_path}")
+    subprocess.run(cmd)
+
 if __name__ == "__main__":
-    # 1. Start FastAPI server in background thread
-    server_thread = threading.Thread(target=start_backend, daemon=True)
-    server_thread.start()
-
-    # 2. Wait 1 second for FastAPI initialization
-    time.sleep(1)
-
-    # 3. Create Desktop Chromium Window (Native Edge WebView2)
-    print("🖥️ Abriendo ventana nativa de escritorio (Chromium App)...")
-    window = webview.create_window(
-        title="Marketing AI Studio V3 · Agency OS Conversacional",
-        url="http://127.0.0.1:8090",
-        width=1440,
-        height=900,
-        min_size=(1024, 720),
-        resizable=True,
-        background_color="#080c15"
-    )
-
-    # Launch with private mode to prevent any browser caching
-    webview.start(private_mode=True)
+    t = threading.Thread(target=start_backend, daemon=True)
+    t.start()
+    time.sleep(1.5)
+    launch_chromium_window()
