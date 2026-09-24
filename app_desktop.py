@@ -10,11 +10,16 @@ import subprocess
 import threading
 import uvicorn
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8")
+
 from server import app
 
 def start_backend():
     port = int(os.environ.get("PORT", 8090))
-    print(f"🚀 Iniciando servidor FastAPI en 127.0.0.1:{port}...")
+    print(f"[Backend] Iniciando servidor FastAPI en 127.0.0.1:{port}...")
     uvicorn.run(app, host="127.0.0.1", port=port, log_level="warning")
 
 def launch_chromium_window():
@@ -32,7 +37,7 @@ def launch_chromium_window():
             break
 
     if not exe_path:
-        print("⚠️ No se encontró ejecutable de Chromium. Abriendo navegador predeterminado...")
+        print("[Desktop] No se encontro ejecutable de Chromium. Abriendo navegador predeterminado...")
         import webbrowser
         webbrowser.open(url)
         return
@@ -46,7 +51,7 @@ def launch_chromium_window():
         "--window-size=1440,900"
     ]
     
-    print(f"🖥️ Abriendo Ventana Nativa de Escritorio: {exe_path}")
+    print(f"[Desktop] Abriendo Ventana Nativa de Escritorio: {exe_path}")
     subprocess.run(cmd)
 
 if __name__ == "__main__":

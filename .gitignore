@@ -24,6 +24,9 @@ Desktop.ini
 *.exe
 *.zip
 
+# Chromium Profile
+.app_profile/
+
 # Campaign exports (keep structure)
 campaigns/*
 !campaigns/.gitkeep

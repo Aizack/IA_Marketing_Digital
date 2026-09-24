@@ -194,29 +194,29 @@ SOLICITUD DEL USUARIO:
 
                 proc = await asyncio.create_subprocess_exec(
                     str(PORTABLE_AGY_BIN),
-                    "--print",
-                    full_prompt,
                     "--model", "gemini-3.7-flash",
                     "--effort", "medium",
                     "--dangerously-skip-permissions",
+                    "--print", full_prompt,
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,
                     env=env,
                     cwd=str(BASE_DIR)
                 )
-                stdout, stderr = await proc.communicate()
+                stdout, stderr = await asyncio.wait_for(proc.communicate(), timeout=120.0)
                 output_text = stdout.decode("utf-8", errors="replace").strip()
-                if output_text and len(output_text) > 20:
+                err_text = stderr.decode("utf-8", errors="replace").strip()
+                if err_text:
+                    print(f"[Engine agy.exe stderr]: {err_text}")
+
+                if output_text and len(output_text) > 10:
                     return output_text
+            except asyncio.TimeoutError:
+                print(f"[Engine] Timeout al esperar respuesta de agy.exe para {agent_id}")
             except Exception as e:
                 print(f"[Engine] Error ejecutando agy.exe: {e}")
 
-        # Fallback simulated response for testing if CLI is busy
-        return f"""# 📌 Respuesta de {agent_id}
-Procesado exitosamente con **Gemini 3.7 Flash (Medium)** para la cuenta **{self.get_active_user_email()}**.
-
-{prompt}
-"""
+        return f"⚠️ **El agente {agent_id} tardó en responder.** Por favor intenta enviar tu mensaje nuevamente."
 
     async def execute_agent_chat(self, agent_id: str, session_id: Optional[str], user_message: str, handoff_context: str = "") -> Dict[str, Any]:
         session = self.get_or_create_session(session_id)

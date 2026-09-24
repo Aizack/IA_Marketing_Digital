@@ -115,7 +115,10 @@ def serve_index():
     return HTMLResponse("<h2>Marketing AI Studio V3 Backend Running.</h2>")
 
 if __name__ == "__main__":
+    import sys
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     import uvicorn
     port = int(os.environ.get("PORT", 8090))
-    print(f"🚀 Iniciando Marketing AI Studio V3 en http://127.0.0.1:{port}")
+    print(f"[Server] Iniciando Marketing AI Studio V3 en http://127.0.0.1:{port}")
     uvicorn.run("server:app", host="0.0.0.0", port=port, reload=False)

@@ -15,10 +15,11 @@
    - `.antigravity/orquestacion/01_orquestador_principal.md`.
    - `.antigravity/agentes/` (Los 5 agentes configurados y verificados).
 3. **Fase 1 Completada & Verificada**:
-   - `engine.py` (Motor conversacional multi-turno con Gemini 3.7 Flash Medium).
+   - `engine.py` (Motor conversacional multi-turno con Gemini 3.7 Flash Medium). Corrección aplicada: Orden de argumentos en CLI `agy.exe` (`--model`, `--effort`, `--dangerously-skip-permissions` antes de `--print`) y timeout de 120s.
    - `server.py` (FastAPI Server verificado en `/health` con `diazbisac@gmail.com`).
-   - `app_desktop.py` (Launcher nativo Chromium App Mode sin pestañas ni caché).
+   - `app_desktop.py` (Launcher nativo Chromium App Mode sin pestañas ni caché, encoding UTF-8 forzado).
    - `iniciar_app.bat` (Lanzador en 1 clic).
+   - **Prueba de Pipeline Exitosa**: Verificado flujo completo 00 (Diagnosticador) -> 01 (Director Estratega) -> 02 (Guionista UGC) generando entregables de alta calidad.
 
 ---
 
