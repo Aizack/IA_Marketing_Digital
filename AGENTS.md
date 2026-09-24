@@ -15,11 +15,11 @@ Bienvenido al sistema **Marketing AI Studio (Agency OS)**. Este espacio de traba
 
 Puedes invocar a cualquier agente o habilidad escribiendo directamente su comando:
 
-* **`/briefing`** (o `/onboarding`): Invoca al **Agente 00 (Diagnosticador)** para iniciar la entrevista y generar el Master Brief.
+* **`/briefing`**: Invoca al **Agente 00 (Diagnosticador)** para iniciar la entrevista y generar el Master Brief.
 * **`/estratega`**: Invoca al **Agente 01 (Director Estratega)** para definir el Mecanismo Único y los 12 Ángulos.
 * **`/guionugc`**: Invoca al **Agente 02 (Guionista UGC)** para escribir las tablas de producción clip a clip (0-30s).
-* **`/6c`**: Invoca al **Agente 03 (Ingeniero de Prompts)** para generar los prompts fotorrealistas en inglés con la fórmula 6C.
-* **`/cont-org`**: Invoca al **Agente 04 (Contenido Orgánico)** para crear carruseles y copys con el framework *Made to Stick* (SUCCESs).
+* **`/prompts6c`**: Invoca al **Agente 03 (Ingeniero de Prompts)** para generar los prompts fotorrealistas en inglés con la fórmula 6C.
+* **`/contenido`**: Invoca al **Agente 04 (Contenido Orgánico)** para crear carruseles y copys con el framework *Made to Stick* (SUCCESs).
 * **`/orquestador`**: Invoca al **Orquestador Maestro** para crear la campaña completa de 5 pasos.
 
 ---
