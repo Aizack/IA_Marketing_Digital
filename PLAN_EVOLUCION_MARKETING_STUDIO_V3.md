@@ -1,86 +1,75 @@
 # 🚀 Plan Oficial de Evolución: Marketing AI Studio V3
 **Fecha de Elaboración:** 24 de Septiembre, 2026  
-**Objetivo:** Transformar la herramienta estática actual en una **Plataforma Conversacional de Agentes IA (Estilo Claude / ChatGPT Enterprise)** con **Historial Persistente**, **Multi-Turno** y **Flujo Guiado Paso a Paso (Agency OS Wizard)**.
+**Objetivo:** Transformar la herramienta en una **Experiencia Conversacional de Agentes IA (Estilo Claude / ChatGPT Enterprise)** con **Agente Entrevistador de Onboarding**, **Relevo de Prompts entre Agentes (Handoff Pipeline)** e **Historial Persistente**.
 
 ---
 
-## 📌 1. Diagnóstico del Estado Actual vs. Visión V3
+## 💡 1. Tu Idea: El Flujo de Agencia Interactivo (Entrevistador + Relevos)
 
-### ❌ Estado Actual (V2 - Formulario Estático)
-* Formulario único por agente con caja de texto estática.
-* Una sola respuesta generada al fondo de la pantalla.
-* Sin posibilidad de hacer preguntas de seguimiento o iterar propuestas.
-* Sin historial de chat ni persistencia de la conversación.
+¡Tu propuesta es sencillamente **brillante** y representa la verdadera forma en que trabaja una agencia de marketing de alto nivel!
 
-### ✨ Visión V3 (Experiencia Conversacional e Intuitiva)
-1. **Chat Inteligente Multi-Turno**: Conversa libremente con cada agente. Haz repreguntas ("*Me gusta el ángulo 2, pero adapta el hook para un público más joven*", "*Genera 3 opciones más de llamado a la acción*").
-2. **Historial de Conversaciones Persistente**: Cada cliente o proyecto guarda sus hilos de conversación en la barra lateral para retomar el trabajo en cualquier momento.
-3. **Workflow Guiado Paso a Paso (Paso a Paso de Agencia)**:
-   * **Paso 1:** Brief del Proyecto (Onboarding).
-   * **Paso 2:** Diagnóstico con el Director Estratega.
-   * **Paso 3:** Guiones UGC alimentados de la Estrategia.
-   * **Paso 4:** Prompts Visuales 6C derivados de los Guiones.
-   * **Paso 5:** Parrilla Made to Stick y Cierre de Campaña.
-4. **Panel Split / Canvas**: Un panel lateral donde se consolida el documento final de la campaña mientras chateas.
-
----
-
-## 🏗️ 2. Arquitectura de Interfaz UX/UI (Estilo Claude / ChatGPT)
+### 🔄 El Flujo de Relevos (Agente a Agente):
 
 ```mermaid
 graph TD
-    A["Sidebar Izquierda<br/>(Historial de Chats + Agentes)"] --> B["Chat Principal (Multi-Turno)"]
-    B --> C["Panel Lateral Canvas<br/>(Entregable Final de Campaña)"]
-    
-    subgraph "Flujo Guiado Paso a Paso"
-        D["1. Brief Onboarding"] --> E["2. Director Estratega"]
-        E --> F["3. Guionista UGC"]
-        F --> G["4. Prompts 6C"]
-        G --> H["5. Contenido SUCCESs"]
-    end
+    A["💬 Agente 00: Onboarding & Briefing Specialist"] -->|"Hace preguntas para aclarar el panorama"| B("Master Briefing Estructurado")
+    B -->|"Instrucción / Prompt de Relevo"| C["🎯 Agente 01: Director Estratega"]
+    C -->|"Estrategia + Prompt de Relevo"| D["🎬 Agente 02: Guionista UGC"]
+    D -->|"Guiones + Prompt de Relevo"| E["🎨 Agente 03: Prompts Visuales 6C"]
+    E -->|"Visuales + Prompt de Relevo"| F["🧲 Agente 04: Contenido SUCCESs"]
+    F --> G["📁 Campaña 360° Completa y Consolidada"]
 ```
 
-### Componentes de la Interfaz:
+---
+
+## 🤖 2. Detalle de los Agentes y la Dinámica de Trabajo
+
+### 1️⃣ Agente 00: Account Executive & Onboarding Specialist (El Entrevistador)
+* **Su Rol:** No te pide que llenes un formulario aburrido. Te hace una breve entrevista conversacional en el chat.
+* **Dinámica:**
+  1. Te pregunta: *"¡Hola! Cuéntame sobre tu marca o producto. ¿Qué vendes y a quién va dirigido?"*
+  2. Evalúa lo que dijiste y hace repreguntas clave: *"¿Cuál es tu competidor principal?", "¿Qué precio o ticket tiene la oferta?", "¿Cuál es el principal dolor que resuelven?"*
+  3. Cuando tiene toda la información clara, sintetiza el **Master Brief del Proyecto** y genera automáticamente las **Instrucciones / Prompt de Relevo** para el siguiente agente.
+
+### 2️⃣ Agente 01: Director Estratega & Avatar (Schwartz & 12 Ángulos)
+* Recibe el Master Brief del Agente 00.
+* Te propone el nivel de conciencia, el mecanismo único y los 3 mejores ángulos de venta.
+* Puedes chatear con él (*"Me gusta el Ángulo 2, pero hagámoslo más agresivo"*).
+* Al estar listo, emite la **Instrucción de Relevo** para el Guionista UGC.
+
+### 3️⃣ Agente 02: Guionista UGC Clip a Clip
+* Recibe los ángulos aprobados del Agente 01.
+* Escribe los guiones escena por escena (Voz en off, B-roll, hablando a cámara).
+* Al finalizar, emite la **Instrucción de Relevo** para el Ingeniero de Prompts.
+
+### 4️⃣ Agente 03: Ingeniero de Prompts Visuales 6C
+* Recibe las escenas visuales del Agente 02.
+* Genera los prompts hiperrealistas en inglés bajo la fórmula 6C para Midjourney / Flux.
+* Emite la **Instrucción de Relevo** para el Creador de Contenido.
+
+### 5️⃣ Agente 04: Creador de Contenido Pegajoso (Made to Stick)
+* Recibe toda la narrativa acumulada y crea la parrilla orgánica de 7 días.
+
+---
+
+## 🛠️ 3. Arquitectura UX/UI V3 (Chat Conversacional)
 
 1. **Barra Lateral Izquierda (Sidebar)**:
-   * Botón `+ Nueva Campaña Guiada`.
-   * **Sección Agentes Especialistas**: Acceso rápido para chatear con un agente específico.
-   * **Sección Historial de Proyectos**: Lista de conversaciones anteriores ordenadas por fecha/marca.
+   * Historial de conversaciones guardadas por marca/cliente.
+   * Selector de Agentes.
 
-2. **Área Central (Chat Vivo)**:
-   * **Header Superior**: Barra de progreso con las 5 etapas del proyecto (`[1] Brief -> [2] Estrategia -> [3] UGC -> [4] Prompts -> [5] Publicación`).
-   * **Cuerpo de Mensajes**: Burbujas de chat estilizadas (Markdown rico, código copiable, tablas, respuestas en tiempo real).
-   * **Sugerencias Rápidas (Chips)**: Botones interactivos sobre el campo de texto (*"Profundizar en Hook"*, *"Cambiar Tono a Humorístico"*, *"Crear variante B"*).
-   * **Caja de Entrada (Prompt Bar)**: Input multinivel con soporte `Shift + Enter`, envío con `Enter` e indicador de token/modelo (`gemini-2.5-flash`).
+2. **Área Central (Chat Vivo Multi-Turno)**:
+   * Conversación fluida en tiempo real.
+   * **Tarjeta de Relevo (Handoff Card)**: Cuando un agente termina su trabajo, muestra un botón destacado:  
+     👉 `[ Continuar con el Agente 01: Director Estratega ]`  
+     *(Al presionar el botón, pasa todo el contexto acumulado sin que tengas que copiar y pegar nada)*.
 
 3. **Panel Derecho (Canvas de Entregable)**:
-   * Vista de documento dinámico que acumula la estrategia y guiones aprobados.
-   * Botones de exportación en 1 clic: `Exportar PDF`, `Copiar Markdown`, `Descargar ZIP de Campaña`.
+   * Se va armando el documento consolidado en vivo a medida que apruebas el trabajo de cada agente.
 
 ---
 
-## 🛠️ 3. Plan de Implementación Técnico (Fases para Mañana)
-
-### 🔹 Fase 1: Backend Conversacional y Persistencia (`engine.py` & `server.py`)
-- [ ] Crear estructura de almacenamiento de sesiones en `D:/Archivos/proyectos/IA_Marketing_Digital/sessions/`.
-- [ ] Implementar endpoint `/api/chat/send` que acepte el historial completo de mensajes (`messages: [{role: "user"|"assistant", content: "..."}]`).
-- [ ] Conectar el modelo `gemini-2.5-flash` con contexto conversacional para responder repreguntas dentro del hilo.
-
-### 🔹 Fase 2: Rediseño Completo del Frontend (`gui/index.html` & `gui/style.css`)
-- [ ] Crear la interfaz de 3 columnas (Sidebar + Chat Area + Canvas Panel).
-- [ ] Implementar motor de renderizado Markdown en vivo (`marked.js` + `highlight.js`).
-- [ ] Añadir almacenamiento de hilos en `localStorage` sincronizado con el backend.
-
-### 🔹 Fase 3: Wizard de Proyecto Paso a Paso (Paso a Paso de Agencia)
-- [ ] Crear el modal/vista inicial de **Briefing** donde el usuario ingresa Marca, Producto y Objetivo.
-- [ ] Implementar la transición de contexto automática entre agentes:
-  * Al terminar la Estrategia (Agente 1), el botón *"Avanzar a Guiones UGC"* pasa automáticamente el informe generado al Agente 2.
-  * Al terminar los Guiones (Agente 2), el botón *"Generar Prompts Visuales"* pasa los guiones al Agente 3.
-
----
-
-## 📝 Resumen Ejecutivo
-Con este plan, el **Marketing AI Studio** dejará de ser una herramienta de formularios aislados para convertirse en un **Copiloto de Agencia Inteligente**, donde interactúas en un chat continuo con tus agentes especialistas, revisas respuestas pasadas y construyes campañas completas en un flujo guiado súper intuitivo.
-
----
-**Nota:** Este documento ha sido guardado oficialmente en el repositorio como hoja de ruta para la jornada de mañana.
+## 📋 Resumen del Plan para Mañana
+* **Crear Agente 00 (Onboarding Specialist)** en `.antigravity/agentes/00_onboarding_specialist.md`.
+* **Implementar Motor de Chat Multi-Turno** en `engine.py` y `server.py`.
+* **Rediseñar la Interfaz Web** con Chat, Tarjetas de Relevo y Canvas Dinámico.
