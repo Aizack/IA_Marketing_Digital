@@ -301,6 +301,8 @@ BRIEF DE AGENCIA:
                     str(PORTABLE_AGY_BIN),
                     "--print",
                     full_prompt,
+                    "--model", "gemini-2.5-flash",
+                    "--effort", "medium",
                     "--dangerously-skip-permissions",
                     stdout=asyncio.subprocess.PIPE,
                     stderr=asyncio.subprocess.PIPE,
