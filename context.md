@@ -14,12 +14,11 @@
    - `.antigravity/contexto/01_negocio_y_objetivos.md`.
    - `.antigravity/orquestacion/01_orquestador_principal.md`.
    - `.antigravity/agentes/` (Los 5 agentes configurados y verificados).
-3. **Fase 1 Completada & Verificada**:
-   - `engine.py` (Motor conversacional multi-turno con Gemini 3.7 Flash Medium). Corrección aplicada: Orden de argumentos en CLI `agy.exe` (`--model`, `--effort`, `--dangerously-skip-permissions` antes de `--print`) y timeout de 120s.
-   - `server.py` (FastAPI Server verificado en `/health` con `diazbisac@gmail.com`).
-   - `app_desktop.py` (Launcher nativo Chromium App Mode sin pestañas ni caché, encoding UTF-8 forzado).
-   - `iniciar_app.bat` (Lanzador en 1 clic).
-   - **Prueba de Pipeline Exitosa**: Verificado flujo completo 00 (Diagnosticador) -> 01 (Director Estratega) -> 02 (Guionista UGC) generando entregables de alta calidad.
+3. **Fase 2 Completada & Verificada**:
+   - **Suite de Agentes Nativos en Antigravity**: Configurados los 6 Agentes Skills (`briefing`, `estratega`, `guionugc`, `prompts6c`, `contenido`, `orquestador`).
+   - **Base de Conocimiento Completa Inyectada**: Los agentes incorporan los 180+ KB de metodologías reales (AvatarHype "Anuncios que Venden", Ads Visual Architect, Made to Stick y Steal Like an Artist).
+   - **Limpieza de Código Legacy**: Eliminados servidores de prueba Python/FastAPI (`server.py`, `engine.py`, `gui/`, `app_desktop.py`).
+   - **Historial Rescatado**: Proyecto del Canal de Curiosidades Históricas (Caso 01: Hashashin vs Ninjas) guardado intacto en `campanas/caso_01_curiosidades_historicas_rescatado.md`.
 
 ---
 
