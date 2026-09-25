@@ -18,9 +18,10 @@ Puedes invocar a cualquier agente o habilidad escribiendo directamente su comand
 * **`/briefing`**: Invoca al **Agente 00 (Diagnosticador)** para iniciar la entrevista y generar el Master Brief.
 * **`/estratega`**: Invoca al **Agente 01 (Director Estratega)** para definir el Mecanismo Único y los 12 Ángulos.
 * **`/guionugc`**: Invoca al **Agente 02 (Guionista UGC)** para escribir las tablas de producción clip a clip (0-30s).
-* **`/prompts6c`**: Invoca al **Agente 03 (Ingeniero de Prompts)** para generar los prompts fotorrealistas en inglés con la fórmula 6C.
+* **`/prompts6c`**: Invoca al **Agente 03 (Ingeniero de Prompts)** para generar prompts visuales (Método 6C) optimizados para **Nano Banana Pro**, **Ideogram**, **Midjourney v6**, **Flux.1**, **Kling AI**, **Luma**, **Runway**, **VEO 3.1** y **Omni Flash**.
 * **`/contenido`**: Invoca al **Agente 04 (Contenido Orgánico)** para crear carruseles y copys con el framework *Made to Stick* (SUCCESs).
-* **`/orquestador`**: Invoca al **Orquestador Maestro** para crear la campaña completa de 5 pasos.
+* **`/animacion-ads`**: Invoca al **Agente 05 (Director de Ads Animados & Motion Graphics)** para crear guiones animados con el **Sistema de 8 Prompts**, storyboards con Style Lock y secuencias First Frame -> Last Frame.
+* **`/orquestador`**: Invoca al **Orquestador Maestro** para crear la campaña completa de 6 pasos.
 
 ---
 
